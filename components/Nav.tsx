@@ -1,8 +1,8 @@
 "use client";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, ScanFace, UserPlus, Users, MapPin, ClipboardList } from "lucide-react";
-const L = [["/", LayoutDashboard, "Home", ""], ["/workers", Users, "Workers", ""], ["/register", UserPlus, "Register", "dsk"], ["/checkin", ScanFace, "Check-in", "fab"], ["/sites", MapPin, "Sites", ""], ["/admin", ClipboardList, "Records", ""]] as const;
+const L: [string, string, string[]][] = [["/", "Today", []], ["/checkin", "Scan", []], ["/workers", "Workers", ["/register", "/card"]], ["/sites", "Sites", []], ["/admin", "Records", []]];
 export default function Nav() {
   const p = usePathname();
-  return (<nav>{L.map(([h, Ic, n, c]) => (<a key={h} href={h} className={c + (p === h ? " on" : "")}><Ic size={c === "fab" ? 26 : 22} strokeWidth={1.9} /><em>{n}</em></a>))}</nav>);
+  const on = (h: string, x: string[]) => (h === "/" ? p === "/" : p.startsWith(h) || x.some((e) => p.startsWith(e)));
+  return (<nav className="tabs">{L.map(([h, n, x]) => (<a key={h} href={h} className={on(h, x) ? "on" : ""}>{n}</a>))}</nav>);
 }

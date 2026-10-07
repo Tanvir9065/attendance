@@ -53,5 +53,5 @@ export default function Edit() {
         <div className="vwrap"><video ref={v} muted playsInline className={facing === "environment" ? "rear" : ""} /><button className="flip" aria-label="Switch camera" onClick={() => setFacing(facing === "user" ? "environment" : "user")}><SwitchCamera size={20} /></button></div>
         <label className="muted"><input type="checkbox" checked={ok} onChange={(e) => setOk(e.target.checked)} />Worker consents to photo/face data collection</label>
         <button onClick={photo}>Capture + Save</button></>}</div>
-    <div className="card"><button style={{ background: "#dc2626" }} onClick={del}>Delete worker</button></div><p className="muted">{msg}</p></div>);
+    <div className="card"><button className="danger" onClick={del}>Delete worker</button></div><p className="muted">{msg}</p></div>);
 }
