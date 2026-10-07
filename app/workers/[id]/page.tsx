@@ -1,4 +1,5 @@
 "use client";
+import { SwitchCamera } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { sb } from "@/lib/supabase";
@@ -6,11 +7,11 @@ import { startCam, getDescriptor, loadFace } from "@/lib/face";
 export default function Edit() {
   const { id } = useParams<{ id: string }>(); const router = useRouter(); const v = useRef<HTMLVideoElement>(null);
   const [f, setF] = useState<any>(null); const [sites, setSites] = useState<{ id: string; name: string }[]>([]);
-  const [cam, setCam] = useState(false); const [ok, setOk] = useState(false); const [msg, setMsg] = useState("");
+  const [cam, setCam] = useState(false); const [facing, setFacing] = useState<"user" | "environment">("user"); const [ok, setOk] = useState(false); const [msg, setMsg] = useState("");
   useEffect(() => { (async () => {
     const { data } = await sb().from("workers").select("name,phone,trade,blood_group,emergency_name,emergency_phone,daily_wage,site_id,active,photo_path,emp_code").eq("id", id).single(); setF(data);
     const s = await sb().from("sites").select("id,name"); setSites(s.data ?? []); })(); }, [id]);
-  useEffect(() => { if (cam) (async () => { try { await loadFace(); await startCam(v.current!); setMsg("Camera ready"); } catch { setMsg("Please allow camera access"); } })(); }, [cam]);
+  useEffect(() => { if (cam) (async () => { try { await loadFace(); await startCam(v.current!, facing); setMsg("Camera ready"); } catch { setMsg("Please allow camera access"); } })(); }, [cam, facing]);
   const set = (k: string) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
   async function save() {
     const { error } = await sb().from("workers").update({ name: f.name, phone: f.phone, trade: f.trade, blood_group: f.blood_group, emergency_name: f.emergency_name,
@@ -49,7 +50,7 @@ export default function Edit() {
       <button className="sec" onClick={toggle}>{f.active ? "Block" : "Unblock"}</button></div>
     <div className="card"><p className="muted">{f.photo_path ? "Photo on file" : "Photo/face missing"}</p>
       {!cam ? <button className="sec" onClick={() => setCam(true)}>Update photo + face</button> : <>
-        <video ref={v} muted playsInline />
+        <div className="vwrap"><video ref={v} muted playsInline className={facing === "environment" ? "rear" : ""} /><button className="flip" aria-label="Switch camera" onClick={() => setFacing(facing === "user" ? "environment" : "user")}><SwitchCamera size={20} /></button></div>
         <label className="muted"><input type="checkbox" checked={ok} onChange={(e) => setOk(e.target.checked)} />Worker consents to photo/face data collection</label>
         <button onClick={photo}>Capture + Save</button></>}</div>
     <div className="card"><button style={{ background: "#dc2626" }} onClick={del}>Delete worker</button></div><p className="muted">{msg}</p></div>);

@@ -6,8 +6,9 @@ export async function loadFace() {
   await Promise.all([f.nets.tinyFaceDetector.loadFromUri(MODELS), f.nets.faceLandmark68Net.loadFromUri(MODELS), f.nets.faceRecognitionNet.loadFromUri(MODELS)]);
   api = f; return f;
 }
-export async function startCam(v: HTMLVideoElement) {
-  v.srcObject = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+export async function startCam(v: HTMLVideoElement, facing: "user" | "environment" = "user") {
+  (v.srcObject as MediaStream | null)?.getTracks().forEach((t) => t.stop());
+  v.srcObject = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: facing } } });
   await v.play();
 }
 export async function getDescriptor(v: HTMLVideoElement): Promise<number[] | null> {
