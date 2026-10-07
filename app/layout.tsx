@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import "./globals.css";
-import Nav from "@/components/Nav";
-export const metadata = { title: "Attendance" };
+import Shell from "@/components/Shell";
+export const metadata = { title: "Site Attendance" };
 export default function Root({ children }: { children: ReactNode }) {
-  return (<html lang="en"><body><Nav /><div className="wrap">{children}</div></body></html>);
+  return (<html lang="en"><body><Shell>{children}</Shell></body></html>);
 }

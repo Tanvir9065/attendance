@@ -9,7 +9,7 @@ export default function Admin() {
     const { data } = await sb().from("attendance").select("id,check_in,check_out,workers(name,sites(name))").eq("work_date", today());
     setRows((data as unknown as R[]) ?? []);
     const { count } = await sb().from("workers").select("id", { count: "exact", head: true }).eq("active", true); setTotal(count ?? 0); })(); }, []);
-  return (<div><h2>Aaj · {today()}</h2><div className="card"><b>Present: {rows.length} / {total}</b></div>
-    <div className="card"><table><tbody><tr><th>Naam</th><th>Site</th><th>In</th><th>Out</th></tr>
+  return (<div><h2>Today · {today()}</h2><div className="card"><b>Present: {rows.length} / {total}</b></div>
+    <div className="card"><table><tbody><tr><th>Name</th><th>Site</th><th>In</th><th>Out</th></tr>
       {rows.map((r) => (<tr key={r.id}><td>{r.workers?.name}</td><td>{r.workers?.sites?.name ?? "-"}</td><td>{t(r.check_in)}</td><td>{t(r.check_out)}</td></tr>))}</tbody></table></div></div>);
 }
