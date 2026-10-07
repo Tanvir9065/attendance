@@ -1,18 +1,39 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { sb, today } from "@/lib/supabase";
-export default function Home() {
-  const [st, setSt] = useState({ p: 0, t: 0, s: 0 });
-  useEffect(() => { (async () => {
-    const c = (q: any) => q.then((r: any) => r.count ?? 0);
-    const [p, t, s] = await Promise.all([
-      c(sb().from("attendance").select("id", { count: "exact", head: true }).eq("work_date", today())),
-      c(sb().from("workers").select("id", { count: "exact", head: true }).eq("active", true)),
-      c(sb().from("sites").select("id", { count: "exact", head: true }))]);
-    setSt({ p, t, s }); })(); }, []);
-  return (<div><h2>Welcome 👋</h2><p className="muted">Today's overview</p>
-    <div className="grid" style={{ margin: "12px 0" }}><div className="card"><b>{st.p}</b><span className="muted">Present</span></div>
-      <div className="card"><b>{st.t}</b><span className="muted">Workers</span></div><div className="card"><b>{st.s}</b><span className="muted">Sites</span></div></div>
-    <div className="tiles"><a className="btn tile" href="/checkin"><span>📷</span>Check-in</a><a className="btn tile" href="/register"><span>➕</span>Register</a>
-      <a className="btn tile" href="/workers"><span>👷</span>Workers</a><a className="btn tile" href="/sites"><span>📍</span>Sites</a></div></div>);
+const LATE = "09:15";
+type W = { id: string; name: string; emp_code: string; trade: string | null };
+type A = { worker_id: string; check_in: string | null; check_out: string | null };
+const hm = (s: string | null) => (s ? new Date(s).toLocaleTimeString("en-GB", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: false }) : "");
+const t12 = (s: string | null) => (s ? new Date(s).toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit" }) : "—");
+const COL = ["#2563eb", "#7c3aed", "#f97316", "#16a34a", "#db2777", "#0891b2", "#64748b"];
+const col = (n: string) => COL[[...n].reduce((a, c) => a + c.charCodeAt(0), 0) % COL.length];
+const ini = (n: string) => n.split(" ").map((x) => x[0]).slice(0, 2).join("").toUpperCase();
+export default function Dash() {
+  const [date, setDate] = useState(today()); const [ws, setWs] = useState<W[]>([]); const [as, setAs] = useState<A[]>([]);
+  const [q, setQ] = useState(""); const [pg, setPg] = useState(0); const [now, setNow] = useState(""); const [greet, setGreet] = useState("Hello");
+  useEffect(() => { sb().from("workers").select("id,name,emp_code,trade").eq("active", true).order("name").then(({ data }) => setWs((data as W[]) ?? [])); }, []);
+  useEffect(() => { sb().from("attendance").select("worker_id,check_in,check_out").eq("work_date", date).then(({ data }) => setAs((data as A[]) ?? [])); setPg(0); }, [date]);
+  useEffect(() => { const f = () => { setNow(new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit" }));
+    const h = Number(new Date().toLocaleString("en-GB", { hour: "2-digit", hour12: false, timeZone: "Asia/Kolkata" })); setGreet(h < 12 ? "Good Morning" : h < 17 ? "Good Afternoon" : "Good Evening"); };
+    f(); const i = setInterval(f, 30000); return () => clearInterval(i); }, []);
+  const rows = useMemo(() => ws.map((w) => { const a = as.find((x) => x.worker_id === w.id); return { w, a, st: !a ? "Absent" : hm(a.check_in) > LATE ? "Late" : "Present" }; }), [ws, as]);
+  const n = (s: string) => rows.filter((r) => r.st === s).length; const total = ws.length;
+  const cards = [["Present", n("Present"), "g", "👥"], ["Absent", n("Absent"), "r", "🙍"], ["Late", n("Late"), "o", "⏰"], ["Checked Out", rows.filter((r) => r.a?.check_out).length, "v", "🚪"]] as const;
+  const f = rows.filter((r) => (r.w.name + r.w.emp_code).toLowerCase().includes(q.toLowerCase())); const pages = Math.max(1, Math.ceil(f.length / 10)); const vis = f.slice(pg * 10, pg * 10 + 10);
+  return (<div><h2 style={{ fontSize: 28 }}>{greet}, Admin 👋</h2><p className="muted">Here&apos;s your attendance summary.</p>
+    <div className="stats">{cards.map(([k, v, c, i]) => (<div key={k} className={"sc " + c}><div className="ic">{i}</div><div><span>{k}</span><b>{v}</b><small>out of {total} workers</small></div>
+      <div className="bar"><i style={{ width: (total ? (v / total) * 100 : 0) + "%" }} /></div></div>))}</div>
+    <div className="dash"><div className="card"><div className="row" style={{ flexWrap: "wrap" }}><h3 style={{ margin: 0 }}>Attendance</h3>
+      <div className="row"><input className="fi" type="date" value={date} max={today()} onChange={(e) => e.target.value && setDate(e.target.value)} />
+        <input className="fi" placeholder="🔍 Search name or ID" value={q} onChange={(e) => { setQ(e.target.value); setPg(0); }} /></div></div>
+      <div className="tw"><table><thead><tr><th>#</th><th>Worker</th><th>ID</th><th>Trade</th><th>Check In</th><th>Check Out</th><th>Status</th><th></th></tr></thead><tbody>
+        {vis.map((r, i) => (<tr key={r.w.id}><td>{pg * 10 + i + 1}</td><td><span className="av" style={{ background: col(r.w.name) }}>{ini(r.w.name)}</span>{r.w.name}</td><td>{r.w.emp_code}</td><td>{r.w.trade ?? "—"}</td>
+          <td>{t12(r.a?.check_in ?? null)}</td><td>{t12(r.a?.check_out ?? null)}</td><td><span className={"pill " + r.st}>{r.st}</span></td><td><a className="edit" href={"/workers/" + r.w.id}>✎</a></td></tr>))}</tbody></table></div>
+      <div className="row" style={{ marginTop: 10 }}><span className="muted">Showing {f.length ? pg * 10 + 1 : 0} to {Math.min(f.length, pg * 10 + 10)} of {f.length}</span>
+        <span><button className="pgb" disabled={pg === 0} onClick={() => setPg(pg - 1)}>‹</button><button className="pgb" disabled={pg >= pages - 1} onClick={() => setPg(pg + 1)}>›</button></span></div></div>
+    <div><a className="btn" href="/checkin">✓ Mark Attendance</a>
+      <div className="card"><b>Quick Actions</b><a className="qa" href="/workers">👥 View All Workers</a><a className="qa" href="/register">➕ Register Worker</a><a className="qa" href="/sites">📍 Sites</a><a className="qa" href="/admin">🗂️ Today&apos;s Records</a></div>
+      <div className="card"><b>Attendance Trend</b><div className="ch">{cards.map(([k, v, c]) => (<div key={k}><em>{v}</em><i className={c} style={{ height: Math.max(4, total ? (v / total) * 100 : 0) + "%" }} /><small>{k === "Checked Out" ? "Out" : k}</small></div>))}</div></div>
+      <div className="card clk">🕒<div><small>Current Time</small><b>{now}</b></div></div></div></div></div>);
 }
