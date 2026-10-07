@@ -2,13 +2,14 @@
 import { useEffect, useState, ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import type { Session } from "@supabase/supabase-js";
+import { Menu, LogOut, CalendarCheck } from "lucide-react";
 import { sb } from "@/lib/supabase";
 import { AuthCtx, Me } from "./Auth";
 import Nav from "./Nav";
 const CREDIT = "Attendance system for site teams";
 export default function Shell({ children }: { children: ReactNode }) {
   const [s, setS] = useState<"load" | "out" | "in">("load"); const [me, setMe] = useState<Me | null>(null); const [noacc, setNoacc] = useState(false); const p = usePathname();
-  const [email, setEmail] = useState(""); const [pw, setPw] = useState(""); const [msg, setMsg] = useState(""); const [busy, setBusy] = useState(false);
+  const [email, setEmail] = useState(""); const [pw, setPw] = useState(""); const [msg, setMsg] = useState(""); const [busy, setBusy] = useState(false); const [open, setOpen] = useState(false);
   useEffect(() => {
     try { setEmail(localStorage.getItem("att_email") || ""); } catch {}
     const init = async (ses: Session | null) => {
@@ -26,13 +27,17 @@ export default function Shell({ children }: { children: ReactNode }) {
     if (error) setMsg(/invalid/i.test(error.message) ? "Incorrect email or password." : error.message); else { try { localStorage.setItem("att_email", email.trim()); } catch {} }
     setBusy(false);
   }
+  useEffect(() => setOpen(false), [p]);
   const out = () => sb().auth.signOut();
   if (s === "load" || (s === "in" && !me && !noacc)) return <div className="login"><p className="muted">Loading...</p></div>;
-  if (s === "out") return (<div className="login"><div className="lbox"><h1 className="h1">Attendance</h1><p className="muted" style={{ marginBottom: 18 }}>Sign in to continue.</p>
+  if (s === "out") return (<div className="login"><div className="lbox"><CalendarCheck size={30} color="#0a63e8" style={{ marginBottom: 10 }} /><h1 className="h1">Attendance</h1><p className="muted" style={{ marginBottom: 18 }}>Sign in to continue.</p>
     <input placeholder="Email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} />
     <input placeholder="Password" type="password" autoComplete="current-password" value={pw} onChange={(e) => setPw(e.target.value)} onKeyDown={(e) => e.key === "Enter" && login()} />
     {msg && <p className="err">{msg}</p>}<button className="lg" disabled={busy} onClick={login}>{busy ? "Signing in..." : "Sign in"}</button><p className="credit">{CREDIT}</p></div></div>);
   if (noacc || !me) return (<div className="login"><div className="lbox"><h1 className="h1">No access yet</h1><p className="muted" style={{ marginBottom: 18 }}>This account has no role. Ask the admin to set it up.</p><button className="lg sec" onClick={out}>Sign out</button></div></div>);
-  return (<AuthCtx.Provider value={me}><header className="top"><div className="topin"><div className="tb"><b className="brand">Attendance</b><button className="lnk" onClick={out}>Sign out</button></div><Nav /></div></header>
-    <main className={"wrap" + (p === "/" ? " hasbar" : "")}>{children}</main></AuthCtx.Provider>);
+  return (<AuthCtx.Provider value={me}><div className="app"><div className={"scrim" + (open ? " open" : "")} onClick={() => setOpen(false)} />
+    <aside className={"side" + (open ? " open" : "")}><div className="sb"><CalendarCheck size={24} color="#0a63e8" />Attendance</div><Nav /></aside>
+    <div className="main"><header className="top"><div className="topin"><div className="tb"><button className="ib menu" aria-label="Open menu" onClick={() => setOpen(true)}><Menu size={20} /></button>
+      <b className="brand">Attendance</b><button className="lnk" onClick={out}><LogOut size={16} />Sign out</button></div></div></header>
+    <main className={"wrap" + (p === "/" ? " hasbar" : "")}>{children}</main></div></div></AuthCtx.Provider>);
 }

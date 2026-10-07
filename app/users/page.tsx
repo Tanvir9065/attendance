@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { KeyRound, Trash2, UserPlus } from "lucide-react";
 import { sb } from "@/lib/supabase";
 import { useMe } from "@/components/Auth";
 type U = { id: string; name: string | null; email: string | null; role: string; user_sites: { sites: { name: string } | null }[] };
@@ -37,8 +38,8 @@ export default function Users() {
       <p className="muted">A new site starts without a location. The manager sets it when they are at the site.</p>
       {sites.length > 0 && <p className="muted" style={{ marginTop: 10 }}>Or give access to existing sites:</p>}
       {sites.map((s) => (<label className="chk" key={s.id}><input type="checkbox" checked={pick.includes(s.id)} onChange={(e) => setPick(e.target.checked ? [...pick, s.id] : pick.filter((x) => x !== s.id))} />{s.name}</label>))}
-      {msg && <p className={ok ? "okt" : "err"}>{msg}</p>}<button className="lg" disabled={busy} onClick={add}>{busy ? "Creating..." : "Create user"}</button></div>
+      {msg && <p className={ok ? "okt" : "err"}>{msg}</p>}<button className="lg" disabled={busy} onClick={add}><UserPlus size={18} />{busy ? "Creating..." : "Create user"}</button></div>
     <div className="list">{us.map((u) => (<div className="er" key={u.id} style={{ alignItems: "flex-start" }}><div className="nm"><b>{u.name || u.email}</b>
       <small>{u.email} · {u.role === "admin" ? "Admin" : "Manager"}</small><small>{u.role === "admin" ? "All sites" : u.user_sites.map((x) => x.sites?.name).filter(Boolean).join(", ") || "No sites assigned"}</small></div>
-      {u.role !== "admin" && <div style={{ display: "flex", gap: 6 }}><button className="sec" style={{ width: "auto", margin: 0 }} onClick={() => reset(u)}>Reset password</button><button className="danger" style={{ width: "auto", margin: 0 }} onClick={() => del(u)}>Remove</button></div>}</div>))}</div></div>);
+      {u.role !== "admin" && <div style={{ display: "flex", gap: 6 }}><button className="ib" aria-label="Reset password" onClick={() => reset(u)}><KeyRound size={18} /></button><button className="ib" style={{ color: "var(--no)" }} aria-label="Remove user" onClick={() => del(u)}><Trash2 size={18} /></button></div>}</div>))}</div></div>);
 }

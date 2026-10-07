@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Check, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, Search, MoreVertical, Pencil, Eraser, Trash2, CheckCheck } from "lucide-react";
+import { useMe } from "@/components/Auth";
 import { sb, today } from "@/lib/supabase";
 const LATE = "09:15";
 type St = "present" | "absent" | "half" | "leave";
@@ -13,6 +14,7 @@ const addDay = (d: string, n: number) => { const x = new Date(d + "T00:00:00Z");
 const wd = (d: string) => new Date(d + "T00:00:00Z").toLocaleDateString("en-GB", { weekday: "long", timeZone: "UTC" });
 const label = (d: string) => new Date(d + "T00:00:00Z").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
 export default function Today() {
+  const me = useMe(); const [menu, setMenu] = useState<string | null>(null);
   const [date, setDate] = useState(today()); const [ws, setWs] = useState<W[]>([]); const [rows, setRows] = useState<A[]>([]);
   const [draft, setDraft] = useState<Record<string, St>>({}); const [q, setQ] = useState(""); const [site, setSite] = useState("");
   const [saving, setSaving] = useState(false); const [saved, setSaved] = useState(false); const [err, setErr] = useState(""); const [ready, setReady] = useState(false);
@@ -26,8 +28,22 @@ export default function Today() {
   const cnt = (k: St) => ws.filter((w) => st(w.id) === k).length;
   const late = ws.filter((w) => st(w.id) === "present" && hm(rec(w.id)?.check_in ?? null) > LATE).length;
   const left = ws.filter((w) => !st(w.id)).length; const n = Object.keys(draft).length;
-  function pick(id: string, k: St) { setSaved(false); setDraft((d) => { const x = { ...d, [id]: k }; if (rec(id)?.status === k) delete x[id]; return x; }); }
+  function pick(id: string, k: St) { setSaved(false); setErr(""); setDraft((d) => { const x = { ...d, [id]: k }; if (rec(id)?.status === k) delete x[id]; return x; }); }
   function rest() { setSaved(false); setDraft((d) => { const x = { ...d }; list.forEach((w) => { if (!st(w.id)) x[w.id] = "present"; }); return x; }); }
+  async function clear(w: W) {
+    setMenu(null); setErr(""); const r = rec(w.id); const un = () => setDraft((d) => { const x = { ...d }; delete x[w.id]; return x; });
+    if (!r) return un();
+    if (!confirm(`Clear ${w.name}'s attendance for ${label(date)}?${r.check_in ? " This also removes the check-in/out times." : ""}`)) return;
+    const { data, error } = await sb().from("attendance").delete().eq("worker_id", w.id).eq("work_date", date).select();
+    if (error) return setErr(error.message); if (!data?.length) return setErr("Could not clear this mark."); un(); await load(date);
+  }
+  async function delWorker(w: W) {
+    setMenu(null); setErr(""); const { count } = await sb().from("attendance").select("id", { count: "exact", head: true }).eq("worker_id", w.id);
+    if (count) return setErr(`${w.name} has attendance records and cannot be deleted. Block the worker instead.`);
+    if (!confirm(`Delete ${w.name} permanently?`)) return;
+    const { data, error } = await sb().from("workers").delete().eq("id", w.id).select(); if (error) return setErr(error.message);
+    if (!data?.length) return setErr("Could not delete this worker."); setWs((x) => x.filter((y) => y.id !== w.id));
+  }
   async function save() {
     if (!n) return; setSaving(true); setErr("");
     const payload = Object.keys(draft).map((id) => ({ worker_id: id, work_date: date, status: draft[id], site_id: ws.find((w) => w.id === id)?.site_id ?? null }));
@@ -43,11 +59,15 @@ export default function Today() {
     <div className="sum">{[["Present", cnt("present")], ["Absent", cnt("absent")], ["Late", late], ["On leave", cnt("leave")]].map(([k, v]) => (<div key={k as string}><b>{v}</b><span>{k}</span></div>))}</div>
     <div className="tool"><div className="sbox"><Search size={16} /><input placeholder="Search name or ID" value={q} onChange={(e) => setQ(e.target.value)} /></div>
       <select value={site} onChange={(e) => setSite(e.target.value)} aria-label="Filter by site"><option value="">All sites</option>{sites.map((x) => <option key={x}>{x}</option>)}</select></div>
-    <div className="row" style={{ margin: "4px 0 8px" }}><span className="muted">{list.length} workers</span><button className="lnk" onClick={rest}>Mark remaining present</button></div>
+    <div className="row" style={{ margin: "4px 0 8px" }}><span className="muted">{list.length} workers</span><button className="lnk" onClick={rest}><CheckCheck size={16} />Mark remaining present</button></div>
     <div className="list">{list.map((w) => { const s = st(w.id); const r = rec(w.id); const sn = S.find((x) => x.k === s);
       return (<div className="er" key={w.id}><div className="nm"><b>{w.name}</b><small>{w.sites?.name ?? "No site"} · {w.trade ?? "No trade"}</small>
         <span className="stl">{sn ? <><i className={"dot " + s} />{sn.n}{s === "present" && hm(r?.check_in ?? null) > LATE ? ", late" : ""}{r?.check_in ? " · In " + t12(r.check_in) : ""}{r?.check_out ? " · Out " + t12(r.check_out) : ""}</> : <span className="faint">Not marked</span>}</span></div>
-        <div className="seg" role="group" aria-label={"Status for " + w.name}>{S.map((x) => (<button key={x.k} className={x.c + (s === x.k ? " on" : "")} aria-pressed={s === x.k} aria-label={x.n} onClick={() => pick(w.id, x.k)}>{x.c}</button>))}</div></div>); })}
+        <div className="seg" role="group" aria-label={"Status for " + w.name}>{S.map((x) => (<button key={x.k} className={x.c + (s === x.k ? " on" : "")} aria-pressed={s === x.k} aria-label={x.n} onClick={() => pick(w.id, x.k)}>{x.c}</button>))}</div>
+        <button className="ib kb" aria-label={"Options for " + w.name} onClick={() => setMenu(menu === w.id ? null : w.id)}><MoreVertical size={18} /></button>
+        {menu === w.id && <><div className="pscrim" onClick={() => setMenu(null)} /><div className="pop"><a className="pi" href={"/workers/" + w.id}><Pencil size={18} />Edit worker</a>
+          <button className="pi" onClick={() => clear(w)}><Eraser size={18} />Clear mark</button>
+          {me.role === "admin" && <button className="pi dng" onClick={() => delWorker(w)}><Trash2 size={18} />Delete worker</button>}</div></>}</div>); })}
       {!list.length && <p className="muted" style={{ padding: 16 }}>No workers match your search.</p>}</div>
     <div className="bar"><div className="barin"><div className="cnts">{err ? <span className="errt">{err}</span> : saved ? <span className="okt"><Check size={16} />Saved</span> :
       <span>P {cnt("present")} · A {cnt("absent")} · H {cnt("half")} · L {cnt("leave")} · {left} left</span>}</div>
