@@ -26,8 +26,8 @@ export default function Shell({ children }: { children: ReactNode }) {
     <button disabled={busy} onClick={login}>{busy ? "Please wait..." : "Login"}</button>{msg && <p className="status">{msg}</p>}</div></div>);
   return (<div className="app"><aside><div className="brand"><CalendarCheck size={26} /> Attendance System</div><Nav />
     <button className="out" onClick={out}><LogOut size={18} /> Logout</button></aside>
-    <div className="main"><header className="top"><b className="mbrand"><CalendarCheck size={22} color="#2563eb" /> Attendance</b>
+    <div className="main"><header className="top"><b className="mbrand"><span className="lg"><CalendarCheck size={18} /></span>Attendance</b>
       <span className="hr"><span className="dt"><CalendarDays size={16} /> {dt}</span><span className="who"><span className="avt"><User size={18} /></span> {mail}</span>
-        <button className="ghost topout" onClick={out}>Logout</button></span></header>
+        <button className="ib topout" aria-label="Logout" onClick={out}><LogOut size={18} /></button></span></header>
       <main className={"wrap" + (p === "/" ? " wide" : "")}>{children}</main></div></div>);
 }

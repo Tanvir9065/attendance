@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { ScanFace, CheckCircle2, AlertCircle } from "lucide-react";
 import { sb, today } from "@/lib/supabase";
 import { startCam, getDescriptor, loadFace, dist, MATCH } from "@/lib/face";
 import { getPos, meters } from "@/lib/geo";
@@ -30,5 +31,8 @@ export default function Checkin() {
       else setMsg(best.name + ": already marked for today");
     } catch (e) { setMsg((e as Error).message); } finally { setBusy(false); }
   }
-  return (<div><h2>Check-in / out</h2><div className="card"><video ref={v} muted playsInline /><button disabled={busy} onClick={scan}>Scan</button><p className="status">{msg}</p></div></div>);
+  const kind = /CHECKED/.test(msg) ? "ok" : /away|not recognised|No face|no site|Please|Check login/.test(msg) ? "err" : "";
+  return (<div><h2 className="pt">Mark attendance</h2><div className="vwrap"><video ref={v} muted playsInline /><div className="frame" /></div>
+    <div className={"result " + kind}>{kind === "ok" ? <CheckCircle2 size={20} /> : kind === "err" ? <AlertCircle size={20} /> : <ScanFace size={20} />}<span>{msg}</span></div>
+    <button className="scanbtn" disabled={busy} onClick={scan}><ScanFace size={22} />{busy ? "Scanning..." : "Scan face"}</button></div>);
 }
