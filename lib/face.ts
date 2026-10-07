@@ -16,5 +16,11 @@ export async function getDescriptor(v: HTMLVideoElement): Promise<number[] | nul
   const r = await f.detectSingleFace(v, new f.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
   return r ? Array.from(r.descriptor) : null;
 }
+export async function faceReady(v: HTMLVideoElement) {
+  if (!v.videoWidth) return false;
+  const f = await loadFace();
+  const d = await f.detectSingleFace(v, new f.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }));
+  return !!d && d.box.width > v.videoWidth * 0.28;
+}
 export const dist = (a: number[], b: number[]) => Math.sqrt(a.reduce((s, x, i) => s + (x - b[i]) ** 2, 0));
 export const MATCH = 0.5;

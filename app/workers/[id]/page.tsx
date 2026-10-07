@@ -51,7 +51,7 @@ export default function Edit() {
       <button className="sec" onClick={toggle}>{f.active ? <Ban size={18} /> : <CheckCircle2 size={18} />}{f.active ? "Block worker" : "Unblock worker"}</button></div>
     <div className="card"><p className="muted">{f.photo_path ? "Photo on file" : "Photo/face missing"}</p>
       {!cam ? <button className="sec" onClick={() => setCam(true)}><Camera size={18} />Update photo + face</button> : <>
-        <div className="vwrap"><video ref={v} muted playsInline className={facing === "environment" ? "rear" : ""} /><button className="flip" aria-label="Switch camera" onClick={() => setFacing(facing === "user" ? "environment" : "user")}><SwitchCamera size={20} /></button></div>
+        <div className="vwrap sm"><video ref={v} muted playsInline className={facing === "environment" ? "rear" : ""} /><button className="flip" aria-label="Switch camera" onClick={() => setFacing(facing === "user" ? "environment" : "user")}><SwitchCamera size={20} /></button></div>
         <label className="muted"><input type="checkbox" checked={ok} onChange={(e) => setOk(e.target.checked)} />Worker consents to photo/face data collection</label>
         <button onClick={photo}><Camera size={18} />Capture + Save</button></>}</div>
     {me.role === "admin" && <div className="card"><button className="danger" onClick={del}><Trash2 size={18} />Delete worker</button></div>}<p className="muted">{msg}</p></div>);
