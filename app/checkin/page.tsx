@@ -25,8 +25,8 @@ export default function Checkin() {
       if (m > site.radius_m) return setMsg(`${best.name}: ${Math.round(m)} m away from site (limit ${site.radius_m} m)`);
       const day = today(); const now = new Date().toISOString();
       const { data: row } = await sb().from("attendance").select("*").eq("worker_id", best.id).eq("work_date", day).maybeSingle();
-      if (!row) { await sb().from("attendance").insert({ worker_id: best.id, work_date: day, check_in: now, site_id: site.id, lat: p.lat, lng: p.lng }); setMsg(best.name + ": CHECKED IN ✅"); }
-      else if (!row.check_out && Date.now() - new Date(row.check_in).getTime() > 5 * 60000) { await sb().from("attendance").update({ check_out: now }).eq("id", row.id); setMsg(best.name + ": CHECKED OUT ✅"); }
+      if (!row) { await sb().from("attendance").insert({ worker_id: best.id, work_date: day, check_in: now, site_id: site.id, lat: p.lat, lng: p.lng }); setMsg(best.name + ": CHECKED IN"); }
+      else if (!row.check_out && Date.now() - new Date(row.check_in).getTime() > 5 * 60000) { await sb().from("attendance").update({ check_out: now }).eq("id", row.id); setMsg(best.name + ": CHECKED OUT"); }
       else setMsg(best.name + ": already marked for today");
     } catch (e) { setMsg((e as Error).message); } finally { setBusy(false); }
   }

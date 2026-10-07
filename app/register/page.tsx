@@ -1,4 +1,5 @@
 "use client";
+import { CheckCircle2, Camera } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { sb } from "@/lib/supabase";
 import { startCam, getDescriptor, loadFace } from "@/lib/face";
@@ -33,7 +34,7 @@ export default function Register() {
       <label className="muted"><input type="checkbox" checked={ok} onChange={(e) => setOk(e.target.checked)} />Worker consents to photo and face data being collected for attendance, safety and gate pass</label>
       <button onClick={next}>Next: Face capture →</button>{msg && <p className="status">{msg}</p>}</div>}
     {step === 2 && <div className="card"><p className="muted">Step 2: Face capture · {f.name}</p><video ref={v} muted playsInline />
-      <button onClick={save}>📸 Capture + Save</button><button className="sec" onClick={() => { stop(); setStep(1); }}>← Back</button><p className="status">{msg}</p></div>}
-    {step === 3 && <div className="card" style={{ textAlign: "center" }}><div style={{ fontSize: 48 }}>✅</div><h2>Worker saved</h2>
+      <button onClick={save}><Camera size={18} className="i" />Capture + Save</button><button className="sec" onClick={() => { stop(); setStep(1); }}>← Back</button><p className="status">{msg}</p></div>}
+    {step === 3 && <div className="card" style={{ textAlign: "center" }}><CheckCircle2 size={56} color="#16a34a" /><h2>Worker saved</h2>
       <a className="btn" href={"/card/" + saved}>View ID card</a><button className="sec" onClick={() => { setF({ ...E, site: f.site }); setOk(false); setStep(1); }}>New worker</button></div>}</div>);
 }

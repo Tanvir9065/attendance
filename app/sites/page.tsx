@@ -1,4 +1,5 @@
 "use client";
+import { MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import { sb } from "@/lib/supabase";
 import { getPos } from "@/lib/geo";
@@ -16,6 +17,6 @@ export default function Sites() {
   }
   return (<div><h2>Sites</h2><div className="card"><p className="muted">Stand at the site, enter its name and tap detect. A 100 m radius will be set.</p>
     <input placeholder="Site name" value={name} onChange={(e) => setName(e.target.value)} />
-    <button onClick={add}>📍 Detect location + save</button><p className="muted">{msg}</p></div>
+    <button onClick={add}><MapPin size={18} className="i" />Detect location + save</button><p className="muted">{msg}</p></div>
     {sites.map((s) => (<div className="card" key={s.id}><b>{s.name}</b><p className="muted">{s.lat.toFixed(5)}, {s.lng.toFixed(5)} · {s.radius_m} m</p></div>))}</div>);
 }

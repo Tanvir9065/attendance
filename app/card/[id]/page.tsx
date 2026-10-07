@@ -1,4 +1,5 @@
 "use client";
+import { User, Download, Printer } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import QRCode from "qrcode";
@@ -32,8 +33,8 @@ export default function Card() {
   }
   if (err) return <p className="muted">{err}</p>; if (!w) return <p className="muted">Loading...</p>;
   return (<div><div className="idc"><div className="idh"><small>GATE PASS</small><b>{w.sites?.name ?? "SITE"}</b></div>
-    <div className="idph">{img ? <img src={img} alt="" /> : "👤"}</div><h3>{w.name}</h3><p className="muted">{w.trade}</p><span className="chip">{w.emp_code}</span>
+    <div className="idph">{img ? <img src={img} alt="" /> : <User size={44} color="#6366f1" />}</div><h3>{w.name}</h3><p className="muted">{w.trade}</p><span className="chip">{w.emp_code}</span>
     <div className="idg"><div><small>BLOOD GROUP</small><b>{w.blood_group || "-"}</b></div><div><small>EMERGENCY</small><b>{w.emergency_name || "-"}</b><span>{w.emergency_phone}</span></div></div>
     {qr && <img src={qr} alt="QR" />}<small>Scan to verify</small></div>
-    <button className="noprint" onClick={png}>⬇️ Download PNG</button><button className="noprint sec" onClick={() => window.print()}>🖨️ Print / PDF</button></div>);
+    <button className="noprint" onClick={png}><Download size={18} className="i" />Download PNG</button><button className="noprint sec" onClick={() => window.print()}><Printer size={18} className="i" />Print / PDF</button></div>);
 }

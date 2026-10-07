@@ -12,5 +12,5 @@ export default function Verify() {
   if (err) return <div className="card"><p>{err}</p><a className="btn" href="/">Login</a></div>; if (!w) return <p className="muted">Verifying...</p>;
   return (<div className="card" style={{ textAlign: "center" }}>{img && <img className="ph" style={{ width: 120, height: 140, objectFit: "cover", borderRadius: 12 }} src={img} alt="" />}
     <h2>{w.name}</h2><p className="muted">{w.emp_code} · {w.trade ?? "-"} · {w.sites?.name ?? "-"}</p>
-    <span className={"badge " + (w.active ? "" : "bad")}>{w.active ? "ACTIVE ✔" : "BLOCKED ✖"}</span></div>);
+    <span className={"badge " + (w.active ? "" : "bad")}>{w.active ? "ACTIVE" : "BLOCKED"}</span></div>);
 }

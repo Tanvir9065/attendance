@@ -15,7 +15,7 @@ export default function Edit() {
   async function save() {
     const { error } = await sb().from("workers").update({ name: f.name, phone: f.phone, trade: f.trade, blood_group: f.blood_group, emergency_name: f.emergency_name,
       emergency_phone: f.emergency_phone, daily_wage: Number(f.daily_wage) || 0, site_id: f.site_id || null }).eq("id", id);
-    setMsg(error ? error.message : "Saved ✅");
+    setMsg(error ? error.message : "Saved");
   }
   async function toggle() {
     const a = !f.active; const { error } = await sb().from("workers").update({ active: a }).eq("id", id);
@@ -28,7 +28,7 @@ export default function Edit() {
     const blob = await new Promise<Blob | null>((r) => c.toBlob(r, "image/jpeg", 0.85)); const path = id + ".jpg";
     const up = await sb().storage.from("worker-photos").upload(path, blob!, { contentType: "image/jpeg", upsert: true }); if (up.error) return setMsg(up.error.message);
     const { error } = await sb().from("workers").update({ photo_path: path, face: d, consent_at: new Date().toISOString() }).eq("id", id);
-    if (error) return setMsg(error.message); setF({ ...f, photo_path: path }); setCam(false); setMsg("Photo and face updated ✅");
+    if (error) return setMsg(error.message); setF({ ...f, photo_path: path }); setCam(false); setMsg("Photo and face updated");
   }
   async function del() {
     const { count } = await sb().from("attendance").select("id", { count: "exact", head: true }).eq("worker_id", id);
@@ -47,8 +47,8 @@ export default function Edit() {
       <button onClick={save}>Save</button></div>
     <div className="card"><span className={"badge " + (f.active ? "" : "bad")}>{f.active ? "ACTIVE" : "BLOCKED"}</span>
       <button className="sec" onClick={toggle}>{f.active ? "Block" : "Unblock"}</button></div>
-    <div className="card"><p className="muted">{f.photo_path ? "Photo on file" : "⚠️ Photo/face missing"}</p>
-      {!cam ? <button className="sec" onClick={() => setCam(true)}>📷 Update photo + face</button> : <>
+    <div className="card"><p className="muted">{f.photo_path ? "Photo on file" : "Photo/face missing"}</p>
+      {!cam ? <button className="sec" onClick={() => setCam(true)}>Update photo + face</button> : <>
         <video ref={v} muted playsInline />
         <label className="muted"><input type="checkbox" checked={ok} onChange={(e) => setOk(e.target.checked)} />Worker consents to photo/face data collection</label>
         <button onClick={photo}>Capture + Save</button></>}</div>

@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState, ReactNode } from "react";
-import { sb } from "@/lib/supabase";
 import { usePathname } from "next/navigation";
+import { CalendarCheck, CalendarDays, User, LogOut } from "lucide-react";
+import { sb } from "@/lib/supabase";
 import Nav from "./Nav";
 export default function Shell({ children }: { children: ReactNode }) {
   const [s, setS] = useState<"load" | "out" | "in">("load"); const p = usePathname(); const [mail, setMail] = useState(""); const [dt, setDt] = useState("");
@@ -16,14 +17,17 @@ export default function Shell({ children }: { children: ReactNode }) {
     setBusy(true); setMsg(""); const { error } = await sb().auth.signInWithPassword({ email, password: pw });
     if (error) setMsg(error.message); setBusy(false);
   }
+  const out = () => sb().auth.signOut();
   if (s === "load") return <div className="login"><p style={{ color: "#fff" }}>Loading...</p></div>;
   if (s === "out") return (<div className="login"><div className="card">
-    <div style={{ fontSize: 40 }}>🏗️</div><h2 style={{ margin: "4px 0" }}>Site Attendance</h2><p className="muted">Sign in to continue</p>
+    <div className="logo"><CalendarCheck size={30} /></div><h2 style={{ margin: "4px 0" }}>Attendance System</h2><p className="muted">Sign in to continue</p>
     <input placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
     <input placeholder="Password" type="password" value={pw} onChange={(e) => setPw(e.target.value)} onKeyDown={(e) => e.key === "Enter" && login()} />
     <button disabled={busy} onClick={login}>{busy ? "Please wait..." : "Login"}</button>{msg && <p className="status">{msg}</p>}</div></div>);
-  return (<div className="app"><aside><div className="brand">📅 Attendance System</div><Nav /><button className="out" onClick={() => sb().auth.signOut()}>⎋ Logout</button></aside>
-    <div className="main"><header className="top"><b className="mbrand">📅 Attendance</b><span className="hr"><span className="dt">📅 {dt}</span><span className="who">👤 {mail}</span>
-      <button className="ghost topout" onClick={() => sb().auth.signOut()}>Logout</button></span></header>
+  return (<div className="app"><aside><div className="brand"><CalendarCheck size={26} /> Attendance System</div><Nav />
+    <button className="out" onClick={out}><LogOut size={18} /> Logout</button></aside>
+    <div className="main"><header className="top"><b className="mbrand"><CalendarCheck size={22} color="#2563eb" /> Attendance</b>
+      <span className="hr"><span className="dt"><CalendarDays size={16} /> {dt}</span><span className="who"><span className="avt"><User size={18} /></span> {mail}</span>
+        <button className="ghost topout" onClick={out}>Logout</button></span></header>
       <main className={"wrap" + (p === "/" ? " wide" : "")}>{children}</main></div></div>);
 }
