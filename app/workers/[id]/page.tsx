@@ -3,9 +3,10 @@ import { SwitchCamera } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { sb } from "@/lib/supabase";
+import { useMe } from "@/components/Auth";
 import { startCam, getDescriptor, loadFace } from "@/lib/face";
 export default function Edit() {
-  const { id } = useParams<{ id: string }>(); const router = useRouter(); const v = useRef<HTMLVideoElement>(null);
+  const { id } = useParams<{ id: string }>(); const me = useMe(); const router = useRouter(); const v = useRef<HTMLVideoElement>(null);
   const [f, setF] = useState<any>(null); const [sites, setSites] = useState<{ id: string; name: string }[]>([]);
   const [cam, setCam] = useState(false); const [facing, setFacing] = useState<"user" | "environment">("user"); const [ok, setOk] = useState(false); const [msg, setMsg] = useState("");
   useEffect(() => { (async () => {
@@ -53,5 +54,5 @@ export default function Edit() {
         <div className="vwrap"><video ref={v} muted playsInline className={facing === "environment" ? "rear" : ""} /><button className="flip" aria-label="Switch camera" onClick={() => setFacing(facing === "user" ? "environment" : "user")}><SwitchCamera size={20} /></button></div>
         <label className="muted"><input type="checkbox" checked={ok} onChange={(e) => setOk(e.target.checked)} />Worker consents to photo/face data collection</label>
         <button onClick={photo}>Capture + Save</button></>}</div>
-    <div className="card"><button className="danger" onClick={del}>Delete worker</button></div><p className="muted">{msg}</p></div>);
+    {me.role === "admin" && <div className="card"><button className="danger" onClick={del}>Delete worker</button></div>}<p className="muted">{msg}</p></div>);
 }

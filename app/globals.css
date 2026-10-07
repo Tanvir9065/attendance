@@ -50,3 +50,5 @@ table{width:100%;border-collapse:collapse}td,th{padding:10px 4px;border-bottom:1
 .idg{display:flex;justify-content:space-around;margin:8px 10px 12px;gap:8px}.idg small{display:block;font-size:10px;letter-spacing:1.5px;color:var(--ink-3)}.idg b{display:block;font-size:15px}.idg span{font-size:13px;color:var(--ink-3)}.idc>img{width:110px;height:110px}.idc>small{display:block;font-size:11px;color:var(--ink-3)}
 @media print{.top,.bar,.noprint{display:none!important}.wrap{padding:0}}
 @media(min-width:700px){.h1{font-size:34px}.tool{grid-template-columns:1fr 200px}.tabs a{flex:none;padding:10px 22px}.tabs{gap:4px}}
+.chk{display:flex;align-items:center;padding:8px 0;font-size:15px}
+@media(max-width:480px){.tabs a{font-size:13.5px}}
